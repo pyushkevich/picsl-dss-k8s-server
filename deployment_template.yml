@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ashs-test-job-%ticket_id%
+spec:
+  template:
+    metadata:
+      name: ashs-test-job
+    spec:
+      containers:
+      - name: ashs-test-job
+        image: docker.io/pyushkevich/ashs_base
+        command: ["/app/dss_ashs_run.sh"]
+        args: ["-w", "mywork", "-a", "/app/atlas/data/ashs_atlas_upennpmc_20170810", "-r", "/app/ashs", "-t", "%ticket_id%" ]
+        volumeMounts:
+        - name: atlas
+          mountPath: /app/atlas
+        - name: auth
+          mountPath: /root/.alfabis
+          readOnly: true
+        resources:
+          requests:
+            cpu: 15000m
+      volumes:
+      - name: atlas
+        persistentVolumeClaim:
+          claimName: pvc-ashs-atlases
+          readOnly: true
+      - name: auth
+        secret:
+          secretName: alfabis-cookie
+
+      restartPolicy: Never
