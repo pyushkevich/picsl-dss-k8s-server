@@ -42,11 +42,12 @@ function dss_service_loop()
     # Generate the list of all services we are able to run
     SMAP=/tmp/hash_cmd_map.txt
     rm -rf $SMAP
-    MAPSIZE=$(cat service_map.txt | wc -l)
+    MAPSIZE=$(cat service_map_${deployment}.txt | wc -l)
     for ((i=0;i<$MAPSIZE;i++)); do
 
       # Get the name/version regexp for the i-th service in the map
-      read -r svc_name svc_vers svc_info <<< $(cat service_map.txt | awk -v i=$i 'NR==i+1 {print $0}')
+      read -r svc_name svc_vers svc_info <<< $(cat service_map_${deployment}.txt \
+        | awk -v i=$i 'NR==i+1 {print $0}')
 
       # Find that name/version in the service listing
       hash=$(cat /tmp/services.txt \
@@ -104,9 +105,7 @@ function dss_service_loop()
 }
 
 
-
-
-dss_service_loop 6   
+dss_service_loop "$@"
 
 
 
