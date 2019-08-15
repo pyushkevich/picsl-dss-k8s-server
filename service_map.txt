@@ -1,0 +1,5 @@
+ASHS-Magdeburg	1.*	docker.io/pyushkevich/ashs_base	/app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashs_atlas_dzne7t
+ASHS-PMC	1.*	docker.io/pyushkevich/ashs_base	/app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashs_atlas_upennpmc_20170810
+ASHS-Princeton	1.*	docker.io/pyushkevich/ashs_base	/app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashs_atlas_princeton
+ASHS-Utrecht	1.*	docker.io/pyushkevich/ashs_base	/app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashs_atlas_umcutrecht_7t_20170810
+ASHS-PMC-T1     1.*     docker.io/pyushkevich/ashs-t1-base /app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashsT1_atlas_upennpmc_07202018

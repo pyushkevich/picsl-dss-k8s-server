@@ -23,7 +23,7 @@ function dss_service_loop()
     fi
 
     # Count the number of pods currenly running
-    n_pods=$(cat /tmp/pods.txt | awk '$3 == "Running" || $3 == "ContainerCreating" || $3 == "Pending" {print $1}' | wc -l | xargs)
+    n_pods=$(cat /tmp/pods.txt | grep "ashs-dev" | awk '$3 == "Running" || $3 == "ContainerCreating" || $3 == "Pending" {print $1}' | wc -l | xargs)
     echo "$(date)   Currently $n_pods of $max_pods Pods are active"
 
     # If there is not space on the cluster, wait a little
@@ -35,16 +35,32 @@ function dss_service_loop()
 
     # Get a list of services we offer and select the subset handled on the cloud
     itksnap-wt -P -dssp-services-list > /tmp/services.txt
-    
-    hash_list=""
-    for (( i=0; i<${#SERVICE_NAMES[*]}; i++)); do
+
+    # Generate the list of all services we are able to run
+    SMAP=/tmp/hash_cmd_map.txt
+    rm -rf $SMAP
+    MAPSIZE=$(cat service_map.txt | wc -l)
+    for ((i=0;i<$MAPSIZE;i++)); do
+
+      # Get the name/version regexp for the i-th service in the map
+      read -r svc_name svc_vers svc_info <<< $(cat service_map.txt | awk -v i=$i 'NR==i+1 {print $0}')
+
+      # Find that name/version in the service listing
       hash=$(cat /tmp/services.txt \
-        | awk -v svc=${SERVICE_NAMES[i]} -v ver="${SERVICE_VERSIONS[i]}" '$1==svc && $2~ver {print $3}')
-      hash_list=$(echo $hash_list $hash | xargs)
-    done
+        | awk -v svc=$svc_name -v ver="^${svc_vers}" '$1==svc && $2~ver {print $3}')
+
+      # Add all the hashes to a new file
+      for h in $hash; do
+        echo $h $svc_info >> $SMAP
+      done
+
+    done 
+
+    # Get a comma-separated list of hashes
+    hash_csv=$(cat $SMAP | awk '{print $1}' | sed -e "s/ /,/g")
 
     # Claim for the service
-    itksnap-wt -dssp-services-claim $(echo $hash_list | sed -e "s/ /,/g") picsl kubernetes1 0 > /tmp/claim.txt
+    itksnap-wt -dssp-services-claim $(echo $hash_csv | sed -e "s/ /,/g") picsl kubernetes1 0 > /tmp/claim.txt
 
     # Read the claim data
     read -r dummy ticket_id service_hash ticket_status <<< $(cat /tmp/claim.txt | grep '^1>')
@@ -55,9 +71,20 @@ function dss_service_loop()
       # Report
       echo "$(date)   Claimed ticket $ticket_id for service $service_hash"
 
-      # Process the deployment
-      cat deployment_template.yml | sed -e "s/%ticket_id%/${ticket_id}/g" \
-        > /tmp/deployment_template.yml 
+      # Get the parameters to use
+      read -r dummy svc_cont svc_cmd svc_args <<< $(cat $SMAP | grep $service_hash)
+
+      # Separate the arguments into separate strings
+      svc_args_line=$(echo $(for arg in $svc_args; do echo "\"$arg\","; done) | sed -e "s/,$//")
+      echo SVC_ARGS_LINE=$svc_args_line
+
+      # Perform the substitution
+      cat deployment_template.yml \
+	      | sed -e "s|%container%|$svc_cont|g" \
+	      | sed -e "s|%command%|$svc_cmd|g" \
+	      | sed -e "s|%args%|$svc_args_line|g" \
+	      | sed -e "s|%ticket_id%|$ticket_id|g" \
+	      > /tmp/deployment_template.yml
 
       # Process the deployment
       kubectl apply -f /tmp/deployment_template.yml
@@ -68,7 +95,6 @@ function dss_service_loop()
       sleep 10
 
     fi
-
 
   done
 }

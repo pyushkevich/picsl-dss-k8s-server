@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dummy-deployment
+spec:
+  containers:
+  - name: ashs-dummy-deployment
+    image: docker.io/pyushkevich/ashs_base
+    command: ["/bin/sleep"]
+    args: ["10000000"]
+    volumeMounts:
+    - name: atlas
+      mountPath: /app/atlas
+    - name: auth
+      mountPath: /root/.alfabis
+      readOnly: true
+    resources:
+      requests:
+        cpu: 15000m
+  volumes:
+  - name: atlas
+    persistentVolumeClaim:
+      claimName: pvc-ashs-atlases
+      readOnly: true
+  - name: auth
+    secret:
+      secretName: alfabis-cookie
+
+  restartPolicy: Never
