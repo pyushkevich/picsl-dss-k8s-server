@@ -1,14 +1,14 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: ashs-dev-job-%ticket_id%
+  name: ashs-worker-%deployment%-job-%ticket_id%
 spec:
   template:
     metadata:
-      name: ashs-dev-job
+      name: ashs-worker-%deployment%-job
     spec:
       containers:
-      - name: ashs-test-job
+      - name: ashs-container-%deployment%-%ticket_id%
         image: %container%
         command: ["%command%"]
         args: [%args%]
@@ -28,6 +28,6 @@ spec:
           readOnly: true
       - name: auth
         secret:
-          secretName: alfabis-cookie
+          secretName: alfabis-cookie-%deployment%
 
       restartPolicy: Never

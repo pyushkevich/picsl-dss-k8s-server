@@ -7,8 +7,11 @@ SERVICE_VERSIONS=(".*")
 # Continuous loop to check for tickets, claim them, and send to k8s cluster
 function dss_service_loop()
 {
+# Type of server we are trying to run (prod/dev)
+  deployment=${1?}
+
   # Get the number of maximum concurrent pods allowed
-  max_pods=${1?}
+  max_pods=${2?}
 
   # Infinite loop
   while true; do
@@ -23,7 +26,7 @@ function dss_service_loop()
     fi
 
     # Count the number of pods currenly running
-    n_pods=$(cat /tmp/pods.txt | grep "ashs-dev" | awk '$3 == "Running" || $3 == "ContainerCreating" || $3 == "Pending" {print $1}' | wc -l | xargs)
+    n_pods=$(cat /tmp/pods.txt | grep "ashs-worker" | awk '$3 == "Running" || $3 == "ContainerCreating" || $3 == "Pending" {print $1}' | wc -l | xargs)
     echo "$(date)   Currently $n_pods of $max_pods Pods are active"
 
     # If there is not space on the cluster, wait a little
@@ -84,6 +87,7 @@ function dss_service_loop()
 	      | sed -e "s|%command%|$svc_cmd|g" \
 	      | sed -e "s|%args%|$svc_args_line|g" \
 	      | sed -e "s|%ticket_id%|$ticket_id|g" \
+	      | sed -e "s|%deployment%|$deployment|g" \
 	      > /tmp/deployment_template.yml
 
       # Process the deployment
