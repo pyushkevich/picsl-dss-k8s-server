@@ -1,0 +1,1 @@
+ASHS-PMC-T1     1.*     docker.io/pyushkevich/ashs-t1-base /app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashsT1_atlas_upennpmc_07202018
