@@ -67,7 +67,7 @@ function dss_service_loop()
     hash_csv=$(cat $SMAP | awk '{print $1}' | sed -e "s/ /,/g")
 
     # Claim for the service
-    itksnap-wt -dssp-services-claim $(echo $hash_csv | sed -e "s/ /,/g") picsl kubernetes-%deployment% 0 > ${TMPPREF}_claim.txt
+    itksnap-wt -dssp-services-claim $(echo $hash_csv | sed -e "s/ /,/g") picsl kubernetes-${deployment} 0 > ${TMPPREF}_claim.txt
 
     # Read the claim data
     read -r dummy ticket_id service_hash ticket_status <<< $(cat ${TMPPREF}_claim.txt | grep '^1>')
