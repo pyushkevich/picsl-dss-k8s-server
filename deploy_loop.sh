@@ -13,11 +13,14 @@ function dss_service_loop()
   # Get the number of maximum concurrent pods allowed
   max_pods=${2?}
 
+  # Get a temp dir prefix
+  TMPPREF=/tmp/${deployment}
+
   # Infinite loop
   while true; do
 
     # Get the current pods
-    kubectl get pods > /tmp/pods.txt
+    kubectl get pods > ${TMPPREF}_pods.txt
 
     if [[ $? -ne 0 ]]; then
       echo "$(date)   Pods listing failed"
@@ -26,7 +29,7 @@ function dss_service_loop()
     fi
 
     # Count the number of pods currenly running
-    n_pods=$(cat /tmp/pods.txt | grep "ashs-worker" | awk '$3 == "Running" || $3 == "ContainerCreating" || $3 == "Pending" {print $1}' | wc -l | xargs)
+    n_pods=$(cat ${TMPPREF}_pods.txt | grep "ashs-worker" | awk '$3 == "Running" || $3 == "ContainerCreating" || $3 == "Pending" {print $1}' | wc -l | xargs)
     echo "$(date)   Currently $n_pods of $max_pods Pods are active"
 
     # If there is not space on the cluster, wait a little
@@ -37,10 +40,10 @@ function dss_service_loop()
     fi
 
     # Get a list of services we offer and select the subset handled on the cloud
-    itksnap-wt -P -dssp-services-list > /tmp/services.txt
+    itksnap-wt -P -dssp-services-list > ${TMPPREF}_services.txt
 
     # Generate the list of all services we are able to run
-    SMAP=/tmp/hash_cmd_map.txt
+    SMAP=${TMPPREF}_hash_cmd_map.txt
     rm -rf $SMAP
     MAPSIZE=$(cat service_map_${deployment}.txt | wc -l)
     for ((i=0;i<$MAPSIZE;i++)); do
@@ -50,7 +53,7 @@ function dss_service_loop()
         | awk -v i=$i 'NR==i+1 {print $0}')
 
       # Find that name/version in the service listing
-      hash=$(cat /tmp/services.txt \
+      hash=$(cat ${TMPPREF}_services.txt \
         | awk -v svc=$svc_name -v ver="^${svc_vers}" '$1==svc && $2~ver {print $3}')
 
       # Add all the hashes to a new file
@@ -64,10 +67,10 @@ function dss_service_loop()
     hash_csv=$(cat $SMAP | awk '{print $1}' | sed -e "s/ /,/g")
 
     # Claim for the service
-    itksnap-wt -dssp-services-claim $(echo $hash_csv | sed -e "s/ /,/g") picsl kubernetes1 0 > /tmp/claim.txt
+    itksnap-wt -dssp-services-claim $(echo $hash_csv | sed -e "s/ /,/g") picsl kubernetes-%deployment% 0 > ${TMPPREF}_claim.txt
 
     # Read the claim data
-    read -r dummy ticket_id service_hash ticket_status <<< $(cat /tmp/claim.txt | grep '^1>')
+    read -r dummy ticket_id service_hash ticket_status <<< $(cat ${TMPPREF}_claim.txt | grep '^1>')
 
     # If there is a ticket claimed, send it to the k8s cluster for processing
     if [[ $ticket_id ]]; then
@@ -89,10 +92,10 @@ function dss_service_loop()
 	      | sed -e "s|%args%|$svc_args_line|g" \
 	      | sed -e "s|%ticket_id%|$ticket_id|g" \
 	      | sed -e "s|%deployment%|$deployment|g" \
-	      > /tmp/deployment_template.yml
+	      > ${TMPPREF}_deployment_template.yml
 
       # Process the deployment
-      kubectl apply -f /tmp/deployment_template.yml
+      kubectl apply -f ${TMPPREF}_deployment_template.yml
 
     else
 
