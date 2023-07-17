@@ -3,3 +3,4 @@ ASHS-PMC	1.*	docker.io/pyushkevich/ashs-base	/app/dss_ashs_run.sh -w mywork -r /
 ASHS-Princeton	1.*	docker.io/pyushkevich/ashs-base	/app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashs_atlas_princeton
 ASHS-Utrecht	1.*	docker.io/pyushkevich/ashs-base	/app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashs_atlas_umcutrecht_7t_20170810
 ASHS-PMC-T1     1.*     docker.io/pyushkevich/ashs-t1-base /app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashsT1_atlas_upennpmc_07202018
+ASHS-PMC-7T-T1  1.*     docker.io/longxie/ashs-7t-t1 /app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashsT1_atlas_upennpmc_07202018

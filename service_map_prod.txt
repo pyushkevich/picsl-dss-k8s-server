@@ -4,3 +4,6 @@ ASHS-Princeton  1.*     docker.io/pyushkevich/ashs-base /app/dss_ashs_run.sh -w 
 ASHS-Utrecht    1.*     docker.io/pyushkevich/ashs-base /app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashs_atlas_umcutrecht_7t_20170810
 ASHS-PMC-T1     1.*     docker.io/pyushkevich/ashs-t1-base /app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashsT1_atlas_upennpmc_07202018
 ASHS-HarP       1.*     docker.io/pyushkevich/ashs-base /app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashs_atlas_harp30/final -I /app/atlas/data/ashs_atlas_icv/final/ -g T1 -f T1 -L 101 -R 102 -J 100
+ASHS-PMC-7T-T1  1.*     docker.io/longxie/ashs-7t-t1 /app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashsT1_atlas_upennpmc_07202018
+ASHS-ABC-3T	1.*	docker.io/pyushkevich/ashs-base /app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashs_atlas_abc_prisma_20200406
+ASHS-ABC-7T	1.*	docker.io/pyushkevich/ashs-base /app/dss_ashs_run.sh -w mywork -r /app/ashs -t %ticket_id% -a /app/atlas/data/ashs_atlas_abc_prisma_7t_20200622
