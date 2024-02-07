@@ -24,7 +24,7 @@ spec:
       volumes:
       - name: atlas
         persistentVolumeClaim:
-          claimName: pvc-ashs-atlases
+          claimName: pvc-ashs-atlases-2023
           readOnly: true
       - name: auth
         secret:
